@@ -1,18 +1,19 @@
+brand:
+  name: MusicTrackr
 button:
-  about: About
-  back: Back
-  go: GO
-  home: Home
-  toggle_dark: Toggle dark mode
-  toggle_langs: Change languages
-intro:
-  desc: Opinionated Vite Starter Template
-  dynamic-route: Demo of dynamic route
-  hi: Hi, {name}!
-  aka: Also known as
-  whats-your-name: What's your name?
+  tryNow: Try Now
+  back: Go Back
 nav:
-  login: Log In
-  sign-up: Sign Up
-  sign-out: Sign Out
-not-found: Not found
+  uploads: Uploads
+home:
+  trackMedia:
+    title: Track your media consumption.
+    subTitle: "Have you ever wondered what kind of music you're listening to? With MusicTracker you can:"
+  features:
+    - track what you listen to
+    - analyze and visualize your music playlists
+    - get recommendations based on your preferences
+  cta:
+    title: How much can you track?
+notFound: Not found
+copyright: © 2022 — Edwin S.

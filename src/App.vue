@@ -1,8 +1,8 @@
 <script setup lang="ts">
 useHead({
-  title: 'Reader',
+  title: 'MusicTrackr',
   meta: [
-    { name: 'description', content: 'Reader' },
+    { name: 'description', content: 'MusicTrackr' },
   ],
 })
 </script>
