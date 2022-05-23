@@ -1,5 +1,30 @@
 <script setup lang="ts">
+import { makeAudioUploadRepository } from '~/repositories/audio-upload';
+import { ref } from 'vue'
+import { makeGoogleCloudStorageRepository } from '~/repositories/google-cloud-storage';
 const { t } = useI18n()
+const file = ref(null)
+const audioUploadRepository = makeAudioUploadRepository
+const googleStorageRepository = makeGoogleCloudStorageRepository;
+
+const selectFile = async () => {
+  file.value.click();
+}
+
+const uploadFile = async (event: any) => {
+  const file = event.target.files[0]
+  const { downloadUrl } = await googleStorageRepository.create({
+    file,
+    metaData: { contentType: file.type },
+    cloudFilePath: 'test/test.mp3',
+  })
+  const { data } = await audioUploadRepository.create({
+    payload: {
+      userId: '',
+      sourceUrl: downloadUrl
+    },
+  });
+}
 </script>
 
 <template>
@@ -24,8 +49,7 @@ const { t } = useI18n()
                   <div class="flex items-center">
                     <div>
                       <span
-                        class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-pink-600 bg-pink-200 mr-3"><i
-                          class="fab fa-html5" /></span>
+                        class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-pink-600 bg-pink-200 mr-3"></span>
                     </div>
                     <div>
                       <h4>
@@ -47,8 +71,10 @@ const { t } = useI18n()
             <h2 class="text-3xl font-semibold text-gray-600 dark:text-gray-300">
               {{ t('home.cta.title') }}
             </h2>
+            <input ref="file" type="file" hidden name="audio" accept=".mp3" @change="uploadFile">
             <button
-              class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 hover:bg-indigo-600 rounded mt-8 mb-6">
+              class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 hover:bg-indigo-600 rounded mt-8 mb-6"
+              @click="selectFile">
               {{ t('button.tryNow') }}
             </button>
           </div>
