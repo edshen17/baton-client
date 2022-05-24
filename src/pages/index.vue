@@ -2,28 +2,43 @@
 import { makeAudioUploadRepository } from '~/repositories/audio-upload';
 import { ref } from 'vue'
 import { makeGoogleCloudStorageRepository } from '~/repositories/google-cloud-storage';
+import { v4 } from 'uuid'
 const { t } = useI18n()
 const file = ref(null)
 const audioUploadRepository = makeAudioUploadRepository
 const googleStorageRepository = makeGoogleCloudStorageRepository;
+const router = useRouter()
 
 const selectFile = async () => {
   file.value.click();
 }
 
 const uploadFile = async (event: any) => {
+  const userId = getUserId();
   const file = event.target.files[0]
   const { downloadUrl } = await googleStorageRepository.create({
     file,
     metaData: { contentType: file.type },
-    cloudFilePath: 'test/test.mp3',
+    cloudFilePath: `${userId}-baton/media/${file.name}.mp3`,
   })
   const { data } = await audioUploadRepository.create({
     payload: {
-      userId: '',
+      userId,
       sourceUrl: downloadUrl
     },
   });
+  const { audioUpload } = data
+  const { _id } = audioUpload
+  router.push(`/uploads/${_id}`)
+}
+
+const getUserId = (): string => {
+  let userId = localStorage.getItem('userId');
+  if (!userId) {
+    userId = v4();
+    localStorage.setItem('userId', userId);
+  }
+  return userId;
 }
 </script>
 
@@ -71,10 +86,11 @@ const uploadFile = async (event: any) => {
             <h2 class="text-3xl font-semibold text-gray-600 dark:text-gray-300">
               {{ t('home.cta.title') }}
             </h2>
-            <input ref="file" type="file" hidden name="audio" accept=".mp3" @change="uploadFile">
+            <input ref="file" type="file" hidden name="audio" accept=".mp3" @input="uploadFile">
             <button
               class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 hover:bg-indigo-600 rounded mt-8 mb-6"
               @click="selectFile">
+
               {{ t('button.tryNow') }}
             </button>
           </div>

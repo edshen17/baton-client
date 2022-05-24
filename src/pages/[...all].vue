@@ -3,9 +3,9 @@ const { t } = useI18n()
 </script>
 
 <template>
-    <div>
-        {{ t('notFound') }}
-    </div>
+  <div>
+    {{ t('notFound') }}
+  </div>
 </template>
 
 <route lang="yaml">

@@ -2,7 +2,7 @@ import { firebaseClient } from '../clients/firebase';
 import { GoogleCloudStorageRepository } from './google-cloud-storage-repository';
 
 const makeGoogleCloudStorageRepository = new GoogleCloudStorageRepository().init({
-    makeClient: firebaseClient,
+	makeClient: firebaseClient,
 });
 
 export { makeGoogleCloudStorageRepository };
