@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 const audioPlayer = ref(null)
 const audioRange = ref(null)
 const rangeSlider = ref(0);
 let isPaused = ref(true);
-// const props = defineProps<{ _id: string }>()
-// const router = useRouter()
-// const { t } = useI18n()
+const props = defineProps<{ _id: string }>()
+
+onMounted(() => {
+})
+
 const toggleAudio = () => {
   const audio = audioPlayer.value;
   if (audio.paused) {
@@ -32,35 +34,32 @@ const onRangeChange = () => {
 </script>
 
 <template>
-  <div class="w-full my-8 h-screen-sm md:my-0">
-    <div class="flex items-center justify-center md:h-screen">
-      <div class="w-11/12 mx-6 md:w-1/4">
-        <img class="aspect-auto w-full h-80 md:w-52 md:h-52 object-cover"
+  <div class="w-full h-screen my-4 md:my-12">
+    <div class="flex items-center justify-center">
+      <div class="w-11/12 mx-6 md:w-8/12 xl:w-4/12">
+        <img class="aspect-auto w-full h-72 md:w-full md:h-96 object-cover"
           src="https://source.unsplash.com/random/900×900/?nature" alt="Song Picture">
         <div class="flex-wrap">
-          <div class="w-full my-8">
+          <div class="w-full my-4 md:my-8">
             <div class="flex justify-between">
               <div>
-                <h3 class="text-xl text-gray-300 font-medium">A Sky Full of Stars</h3>
-                <p>artist name</p>
+                <h3 class="text-xl font-medium">A Sky Full of Stars</h3>
               </div>
-              <div>
-                <svg class="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path
-                    d="M10 3.22l-.61-.6a5.5 5.5 0 0 0-7.78 7.77L10 18.78l8.39-8.4a5.5 5.5 0 0 0-7.78-7.77l-.61.61z" />
-                </svg>
-              </div>
+              <a
+                href="https://storage.cloud.google.com/japanese-221819.appspot.com/186b6f97-203e-4cbc-bad8-9885af0f62d7-baton/media/sample-3s.mp3">
+                <div class="i-carbon-download h-6"></div>
+              </a>
             </div>
             <div class="audio-player">
-              <audio ref="audioPlayer" @timeupdate='onTimeUpdate'
+              <audio ref="audioPlayer" @timeupdate='onTimeUpdate' controlsList="download"
                 src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_multimedia_alert_chime_short_musical_notification_cute_child_like_001_64918.mp3?_=1"></audio>
-              <div class=" flex controls justify-center items-center mx-auto">
+              <div class=" flex justify-center items-center mx-auto py-8">
                 <input type="range" ref="audioRange" class="time-slider bg-gray-200 rounded w-full h-1 rounded-2"
                   max="100" :style="{ 'background-size': `${rangeSlider}% 100%` }" @change="onRangeChange"
                   v-model="rangeSlider">
               </div>
             </div>
-            <div class="flex justify-center items-center mt-8">
+            <div class="flex justify-center items-center">
               <button class="text-black dark:text-white p-8 rounded-full border-3 border-gray-500 dark:border-gray-400"
                 @click="toggleAudio">
                 <div class="w-8 h-8"

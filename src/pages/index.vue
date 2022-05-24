@@ -18,8 +18,8 @@ const uploadFile = async (event: any) => {
   const file = event.target.files[0]
   const { downloadUrl } = await googleStorageRepository.create({
     file,
-    metaData: { contentType: file.type },
-    cloudFilePath: `${userId}-baton/media/${file.name}.mp3`,
+    metaData: { contentType: file.type, contentDisposition: 'attachment' },
+    cloudFilePath: `${userId}-baton/media/${file.name}`,
   })
   const { data } = await audioUploadRepository.create({
     payload: {
@@ -90,7 +90,6 @@ const getUserId = (): string => {
             <button
               class="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 hover:bg-indigo-600 rounded mt-8 mb-6"
               @click="selectFile">
-
               {{ t('button.tryNow') }}
             </button>
           </div>
