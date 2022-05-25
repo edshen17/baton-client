@@ -1,18 +1,28 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { makeAudioUploadRepository } from '~/repositories/audio-upload';
+const audioUploadRepository = makeAudioUploadRepository;
 const audioPlayer = ref(null)
-const audioRange = ref(null)
-const rangeSlider = ref(0);
-let isPaused = ref(true);
+const isLoading = ref(true)
+const seekSliderData = ref({
+  max: 100,
+  currentTime: 0,
+})
+const audioUpload = ref(null);
+const isPaused = ref(true);
 const props = defineProps<{ _id: string }>()
+let raf = null;
 
-onMounted(() => {
+onMounted(async () => {
+  const { data } = await audioUploadRepository.getById({ _id: props._id })
+  audioUpload.value = data.audioUpload;
+  isLoading.value = false;
 })
 
 const toggleAudio = () => {
   const audio = audioPlayer.value;
   if (audio.paused) {
-    audioPlayer.value.play();
+    audio.play();
     isPaused.value = false;
   } else {
     audio.pause();
@@ -20,57 +30,79 @@ const toggleAudio = () => {
   }
 }
 
-const onTimeUpdate = () => {
+const whilePlaying = () => {
   const audio = audioPlayer.value;
-  const percentagePosition = (100 * audio.currentTime) / audio.duration;
-  rangeSlider.value = percentagePosition;
+  seekSliderData.value.currentTime = Math.floor(audio.currentTime);
+  raf = requestAnimationFrame(whilePlaying);
 }
 
-const onRangeChange = () => {
+const onSeekSliderChange = () => {
   const audio = audioPlayer.value;
-  const time = (rangeSlider.value * audio.duration) / 100;
-  audio.currentTime = time;
+  audio.currentTime = Math.floor(seekSliderData.value.currentTime);
+  if (!audio.paused) {
+    requestAnimationFrame(whilePlaying);
+  }
+}
+
+const onSeekSliderInput = () => {
+  const audio = audioPlayer.value;
+  if (!audio.paused) {
+    cancelAnimationFrame(raf);
+  }
+}
+
+const onLoadedMetaData = () => {
+  const audio = audioPlayer.value;
+  seekSliderData.value.max = Math.floor(audio.duration);
 }
 </script>
 
 <template>
-  <div class="w-full h-screen my-4 md:my-12">
-    <div class="flex items-center justify-center">
-      <div class="w-11/12 mx-6 md:w-8/12 xl:w-4/12">
-        <img class="aspect-auto w-full h-72 md:w-full md:h-96 object-cover"
-          src="https://source.unsplash.com/random/900×900/?nature" alt="Song Picture">
-        <div class="flex-wrap">
-          <div class="w-full my-4 md:my-8">
-            <div class="flex justify-between">
-              <div>
-                <h3 class="text-xl font-medium">A Sky Full of Stars</h3>
+  <Suspense>
+    <template #default>
+      <div class="w-full h-screen my-4 md:my-12" v-if="!isLoading">
+        <div class="flex items-center justify-center">
+          <div class="w-11/12 mx-6 md:w-8/12 xl:w-4/12">
+            <img class="aspect-auto w-full h-72 md:w-full md:h-96 object-cover"
+              src="https://source.unsplash.com/random/900×900/?nature" alt="Song Picture">
+            <div class="flex-wrap">
+              <div class="w-full my-5 md:my-8">
+                <div class="flex justify-between">
+                  <div>
+                    <h3 class="text-xl font-medium pr-4 break-all">{{ audioUpload.fileName }}</h3>
+                  </div>
+                  <a :href="audioUpload.sourceUrl">
+                    <div class="i-carbon-download h-6"></div>
+                  </a>
+                </div>
+                <div class="audio-player">
+                  <div class=" flex justify-center items-center mx-auto py-8">
+                    <audio ref="audioPlayer" :src="audioUpload.sourceUrl" @loadedmetadata="onLoadedMetaData"></audio>
+                    <input type="range" @change="onSeekSliderChange" @input="onSeekSliderInput"
+                      class="time-slider bg-gray-200 rounded w-full h-2"
+                      :style="{ 'background-size': `${seekSliderData.currentTime}% 100%` }"
+                      v-model="seekSliderData.currentTime">
+                  </div>
+                </div>
+                <div class="flex justify-center items-center">
+                  <button
+                    class="text-black dark:text-white p-8 rounded-full border-3 border-gray-500 dark:border-gray-400"
+                    @click="toggleAudio">
+                    <div class="w-8 h-8"
+                      :class="{ 'i-carbon-play-filled-alt': isPaused, 'i-carbon-pause-filled': !isPaused }"></div>
+                  </button>
+                </div>
               </div>
-              <a
-                href="https://storage.cloud.google.com/japanese-221819.appspot.com/186b6f97-203e-4cbc-bad8-9885af0f62d7-baton/media/sample-3s.mp3">
-                <div class="i-carbon-download h-6"></div>
-              </a>
-            </div>
-            <div class="audio-player">
-              <audio ref="audioPlayer" @timeupdate='onTimeUpdate' controlsList="download"
-                src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_multimedia_alert_chime_short_musical_notification_cute_child_like_001_64918.mp3?_=1"></audio>
-              <div class=" flex justify-center items-center mx-auto py-8">
-                <input type="range" ref="audioRange" class="time-slider bg-gray-200 rounded w-full h-1 rounded-2"
-                  max="100" :style="{ 'background-size': `${rangeSlider}% 100%` }" @change="onRangeChange"
-                  v-model="rangeSlider">
-              </div>
-            </div>
-            <div class="flex justify-center items-center">
-              <button class="text-black dark:text-white p-8 rounded-full border-3 border-gray-500 dark:border-gray-400"
-                @click="toggleAudio">
-                <div class="w-8 h-8"
-                  :class="{ 'i-carbon-play-filled-alt': isPaused, 'i-carbon-pause-filled': !isPaused }"></div>
-              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+    <template #fallback>
+      <span>Loading...</span>
+    </template>
+  </Suspense>
+
 </template>
 
 <style>

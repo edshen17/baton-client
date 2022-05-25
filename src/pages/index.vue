@@ -24,7 +24,8 @@ const uploadFile = async (event: any) => {
   const { data } = await audioUploadRepository.create({
     payload: {
       userId,
-      sourceUrl: downloadUrl
+      sourceUrl: downloadUrl,
+      fileName: file.name,
     },
   });
   const { audioUpload } = data
