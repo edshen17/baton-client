@@ -11,19 +11,17 @@ import Inspect from 'vite-plugin-inspect'
 import Unocss from 'unocss/vite'
 
 export default defineConfig({
-  define: {
-    'process.env': {}
-  },
   base: '/',
   build: {
     outDir: path.resolve(__dirname, '../server/dist/server/public')
   },
   server: {
+    host: '0.0.0.0',
+    port: 8080,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false,
       }
     }
   },
