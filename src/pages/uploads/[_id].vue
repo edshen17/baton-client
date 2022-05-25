@@ -2,16 +2,22 @@
 import { ref, onMounted } from 'vue'
 import { makeAudioUploadRepository } from '~/repositories/audio-upload';
 const audioUploadRepository = makeAudioUploadRepository;
+const isLoading = ref(true);
 const audioPlayer = ref(null)
-const isLoading = ref(true)
 const seekSliderData = ref({
   max: 100,
   currentTime: 0,
 })
 const audioUpload = ref(null);
-const isPaused = ref(true);
+let isPaused = ref(true);
 const props = defineProps<{ _id: string }>()
 let raf = null;
+
+const whilePlaying = () => {
+  const audio = audioPlayer.value;
+  seekSliderData.value.currentTime = Math.floor(audio.currentTime);
+  raf = requestAnimationFrame(whilePlaying);
+}
 
 onMounted(async () => {
   const { data } = await audioUploadRepository.getById({ _id: props._id })
@@ -23,24 +29,12 @@ const toggleAudio = () => {
   const audio = audioPlayer.value;
   if (audio.paused) {
     audio.play();
+    requestAnimationFrame(whilePlaying);
     isPaused.value = false;
   } else {
     audio.pause();
+    cancelAnimationFrame(raf);
     isPaused.value = true;
-  }
-}
-
-const whilePlaying = () => {
-  const audio = audioPlayer.value;
-  seekSliderData.value.currentTime = Math.floor(audio.currentTime);
-  raf = requestAnimationFrame(whilePlaying);
-}
-
-const onSeekSliderChange = () => {
-  const audio = audioPlayer.value;
-  audio.currentTime = Math.floor(seekSliderData.value.currentTime);
-  if (!audio.paused) {
-    requestAnimationFrame(whilePlaying);
   }
 }
 
@@ -48,6 +42,14 @@ const onSeekSliderInput = () => {
   const audio = audioPlayer.value;
   if (!audio.paused) {
     cancelAnimationFrame(raf);
+  }
+}
+
+const onSeekSliderChange = () => {
+  const audio = audioPlayer.value;
+  audio.currentTime = Math.floor(seekSliderData.value.currentTime);
+  if (!audio.paused) {
+    requestAnimationFrame(whilePlaying);
   }
 }
 
@@ -76,12 +78,12 @@ const onLoadedMetaData = () => {
                   </a>
                 </div>
                 <div class="audio-player">
+                  <audio ref="audioPlayer" :src="audioUpload.sourceUrl" @loadedmetadata="onLoadedMetaData"></audio>
                   <div class=" flex justify-center items-center mx-auto py-8">
-                    <audio ref="audioPlayer" :src="audioUpload.sourceUrl" @loadedmetadata="onLoadedMetaData"></audio>
                     <input type="range" @change="onSeekSliderChange" @input="onSeekSliderInput"
                       class="time-slider bg-gray-200 rounded w-full h-2"
-                      :style="{ 'background-size': `${seekSliderData.currentTime}% 100%` }"
-                      v-model="seekSliderData.currentTime">
+                      :style="{ 'background-size': `${Math.round((seekSliderData.currentTime / seekSliderData.max) * 100)}% 100%` }"
+                      v-model="seekSliderData.currentTime" :max="seekSliderData.max">
                   </div>
                 </div>
                 <div class="flex justify-center items-center">
