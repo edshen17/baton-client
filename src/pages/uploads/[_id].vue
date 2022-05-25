@@ -5,7 +5,7 @@ const audioUploadRepository = makeAudioUploadRepository;
 const isLoading = ref(true);
 const audioPlayer = ref(null)
 const seekSliderData = ref({
-  max: 100,
+  max: 10000,
   currentTime: 0,
 })
 const audioUpload = ref(null);
@@ -15,7 +15,7 @@ let raf = null;
 
 const whilePlaying = () => {
   const audio = audioPlayer.value;
-  seekSliderData.value.currentTime = Math.floor(audio.currentTime);
+  seekSliderData.value.currentTime = audio.currentTime * 100;
   raf = requestAnimationFrame(whilePlaying);
 }
 
@@ -40,6 +40,7 @@ const toggleAudio = () => {
 
 const onSeekSliderInput = () => {
   const audio = audioPlayer.value;
+  audio.currentTime = seekSliderData.value.currentTime / 100;
   if (!audio.paused) {
     cancelAnimationFrame(raf);
   }
@@ -47,7 +48,6 @@ const onSeekSliderInput = () => {
 
 const onSeekSliderChange = () => {
   const audio = audioPlayer.value;
-  audio.currentTime = Math.floor(seekSliderData.value.currentTime);
   if (!audio.paused) {
     requestAnimationFrame(whilePlaying);
   }
@@ -55,7 +55,7 @@ const onSeekSliderChange = () => {
 
 const onLoadedMetaData = () => {
   const audio = audioPlayer.value;
-  seekSliderData.value.max = Math.floor(audio.duration);
+  seekSliderData.value.max = Math.floor(audio.duration * 100);
 }
 </script>
 
@@ -82,7 +82,7 @@ const onLoadedMetaData = () => {
                   <div class=" flex justify-center items-center mx-auto py-8">
                     <input type="range" @change="onSeekSliderChange" @input="onSeekSliderInput"
                       class="time-slider bg-gray-200 rounded w-full h-2"
-                      :style="{ 'background-size': `${Math.round((seekSliderData.currentTime / seekSliderData.max) * 100)}% 100%` }"
+                      :style="{ 'background-size': `${(seekSliderData.currentTime / seekSliderData.max) * 100}% 100%` }"
                       v-model="seekSliderData.currentTime" :max="seekSliderData.max">
                   </div>
                 </div>
